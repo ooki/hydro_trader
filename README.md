@@ -12,3 +12,11 @@ The player controls a network of hydro reservoirs. Each the player must:
 1. Decide which reservoirs should produce electricity.
 2. If producing electricity, what price do I demand for my power.
 
+
+# 100% not finished!
+The product should contain a apropriate number of bugs.
+
+# To Run:
+1. Start server
+2. Start client
+3. run_server.sh

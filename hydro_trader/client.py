@@ -33,6 +33,8 @@ class Strategy:
         print("--state--")
         print(json.dumps(self.initial_state, indent=4))
         print("----")
+        print(json.dumps(self.current_state, indent=4))
+
 
         self.reservoir_ids = list(self.initial_state["reservoirs"].keys())        
 

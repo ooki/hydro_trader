@@ -39,9 +39,6 @@ class Server:
         sim = Simulation(data_dir="data")
         sim.create_norwegian_environment()
         
-        # tmp
-        sim.fill_all_reservoirs()
-        
         marked = PowerMarked(data_dir="data")
         game = Game(sim, marked)
         
