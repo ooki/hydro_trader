@@ -7,16 +7,17 @@ The game is played between N players, each competing in the same market, with th
 as much money at the end of the time T.
 The weather and market is simulated to be based in Norway.
 
+
 # Game 
 The player controls a network of hydro reservoirs. Each the player must:
 1. Decide which reservoirs should produce electricity.
 2. If producing electricity, what price do I demand for my power.
 
-
 # 100% not finished!
 The product should contain a apropriate number of bugs.
 
 # To Run:
-1. Start server
-2. Start client
-3. run_server.sh
+1. Start server ( uvicorn hydro_trader.server:app --host 0.0.0.0 --port 8000 )
+2. Start client ( python ./hydro_trader/client.py )
+3. start_game.py (password is 1234, python ./start_game.py -p 1234 )
+
