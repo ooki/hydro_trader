@@ -123,31 +123,31 @@ class MontainWithSnow:
             self.current_snow_height = self.data[0]['snow_height']
             self.temperature = self.data[0]['temperature']
 
-def process_timestep(self):
-        """
-        Process the mountain snow melt for the next timestep.
-        Calculate snow melt based on temperature and send water to output reservoir.
-        """
-        self.timestep += 1
-        
-        # Get data for current timestep if available
-        if self.timestep < len(self.data):
-            # Calculate snow melt from previous to current timestep
-            prev_snow_height = self.current_snow_height
-            self.current_snow_height = self.data[self.timestep]['snow_height']
-            self.temperature = self.data[self.timestep]['temperature']
+    def process_timestep(self):
+            """
+            Process the mountain snow melt for the next timestep.
+            Calculate snow melt based on temperature and send water to output reservoir.
+            """
+            self.timestep += 1
             
-            # Only melt snow if temperature is above 0°C and snow height has decreased
-            snow_melt = 0.0
-            if self.temperature > 0 and prev_snow_height > self.current_snow_height:
-                # Calculate snow melt in m³
-                snow_melt = (prev_snow_height - self.current_snow_height) * self.snow_area
-                # Add melt water to the reservoir - add direcly to the reservoir to make the task a bit easier (no delay)
-                self.output_reservoir.add_inflow_snow_melt(snow_melt)
+            # Get data for current timestep if available
+            if self.timestep < len(self.data):
+                # Calculate snow melt from previous to current timestep
+                prev_snow_height = self.current_snow_height
+                self.current_snow_height = self.data[self.timestep]['snow_height']
+                self.temperature = self.data[self.timestep]['temperature']
+                
+                # Only melt snow if temperature is above 0°C and snow height has decreased
+                snow_melt = 0.0
+                if self.temperature > 0 and prev_snow_height > self.current_snow_height:
+                    # Calculate snow melt in m³
+                    snow_melt = (prev_snow_height - self.current_snow_height) * self.snow_area
+                    # Add melt water to the reservoir - add direcly to the reservoir to make the task a bit easier (no delay)
+                    self.output_reservoir.add_inflow_snow_melt(snow_melt)
+                
+                return snow_melt
             
-            return snow_melt
-        
-        return 0.0
+            return 0.0
 
     
 
