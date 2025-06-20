@@ -1,0 +1,156 @@
+<!-- templates/admin.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .auth-form {
+            margin-bottom: 20px;
+        }
+        .admin-controls {
+            display: {% if authenticated %}block{% else %}none{% endif %};
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .start-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Game Admin Panel</h1>
+        
+        {% if not authenticated %}
+        <div class="auth-form">
+            <h2>Authentication Required</h2>
+            <form method="POST" action="/admin">
+                <label for="password">Admin Password:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">Login</button>
+            </form>
+            
+            {% if error %}
+            <div class="message error">{{ error }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if authenticated %}
+            <div class="admin-controls">
+                <h2>Game Controls</h2>
+                
+                <div class="info-box" id="game-info">
+                    <h3>Game Information</h3>
+                    <table>
+                        <tr><td>Number of Players:</td><td id="n_players">{{ n_players }}</td></tr>
+                        <tr><td>Game ID:</td><td id="game_id">{{ game_id }}</td></tr>
+                        <tr><td>Is Game Active:</td><td id="is_active">{{ is_active }}</td></tr>
+                        <tr><td>Is Game Over:</td><td id="is_game_over">{{ is_game_over }}</td></tr>
+                        <tr><td>Total Timesteps:</td><td id="n_timesteps">{{ n_timesteps }}</td></tr>
+                        <tr><td>Current Timestep:</td><td id="current_timestep">{{ current_timestep }}</td></tr>
+                    </table>
+                </div>
+                
+                <form method="POST" action="/admin/start">
+                    <div class="form-group">
+                        <label for="num_timesteps">Number of Timesteps:</label>
+                        <input type="number" id="num_timesteps" name="num_timesteps" value="20" min="1" required>
+                    </div>
+                    <button type="submit" class="start-btn">Start Game</button>
+                </form>
+                
+                <form method="POST" action="/admin/reset">
+                    <button type="submit" class="reset-btn">Reset Server</button>
+                </form>
+                
+                {% if message %}
+                <div class="message success">{{ message }}</div>
+                {% endif %}
+                
+                {% if error %}
+                <div class="message error">{{ error }}</div>
+                {% endif %}
+            </div>
+
+            <script>
+                // Function to update game info
+                function updateGameInfo() {
+                    fetch('/admin/game-info')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                console.error(data.error);
+                                return;
+                            }
+                            
+                            // Update all fields with new data
+                            document.getElementById('n_players').textContent = data.n_players;
+                            document.getElementById('game_id').textContent = data.game_id;
+                            document.getElementById('is_active').textContent = data.is_active;
+                            document.getElementById('is_game_over').textContent = data.is_game_over;
+                            document.getElementById('n_timesteps').textContent = data.n_timesteps;
+                            document.getElementById('current_timestep').textContent = data.current_timestep;
+                        })
+                        .catch(error => console.error('Error fetching game info:', error));
+                }
+                
+                // Update game info every second
+                setInterval(updateGameInfo, 1000);
+                
+                // Initial update
+                updateGameInfo();
+            </script>
+{% endif %}
+    </div>
+</body>
+</html>

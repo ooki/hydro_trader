@@ -3,9 +3,17 @@ import logging
 from typing import Dict, Set, Any, List
 from contextlib import asynccontextmanager
 from copy import deepcopy
+import os
+import uuid
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request, Form
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
+
+from starlette.middleware.sessions import SessionMiddleware
+
 
 # Local imports
 from hydro_trader.game import Game, PowerMarked
@@ -32,6 +40,7 @@ class Server:
 
         self.game_id = game_id
         self.is_active = False
+        self.is_accepting_new_players = True
 
 
     def _create_game(self):
@@ -64,7 +73,7 @@ class Server:
 
     async def _run_game_loop(self):
     
-        first_timestep_wait = False
+        first_timestep_wait = True
         while True:
             if self.is_active:                                
 
@@ -78,6 +87,9 @@ class Server:
                     logger.info("Game over")
                     print("game over: ", self.game.is_game_over())
                     self.is_active = False
+                    first_timestep_wait = True
+
+
                     for player_id in self._players:
                         self.update_events[player_id].set()
                         break
@@ -97,6 +109,23 @@ class Server:
                 await asyncio.sleep(0.1)
 
     
+    async def reset_game(self):
+        self.is_active = False
+        self.is_accepting_new_players = False
+
+        self.game = self._create_game()
+
+        self.is_accepting_new_players = True
+        for player_id in self._players:
+            self.update_events[player_id].set()
+            break
+
+        self._players = set()
+        self._sockets = {}
+        self.update_events = {}
+
+        
+
 
 
     async def setup_player(self, websocket: WebSocket, player_id: str, player_name:str):
@@ -154,7 +183,14 @@ class Server:
 
         # logger.info("Timestep state sent to player %s", player_id)
 
-            
+
+
+
+
+# Set up templates
+templates = Jinja2Templates(directory="templates")
+
+
 game_server = Server()
 app = FastAPI(title="Hydro-Trader Game-Server",
               lifespan=game_server.game_loop_task)
@@ -168,7 +204,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-    
+secret_key = os.environ.get("SECRET_KEY", str(uuid.uuid4()))
+app.add_middleware(SessionMiddleware, secret_key=secret_key)
 
 
 @app.get("/")
@@ -176,6 +213,13 @@ async def root():
     """Health check endpoint"""
     return {"status": "Hydro Trader server is running"}
 
+@app.post("/reset")
+async def reset_game(pwd: str):
+    if pwd != game_server.admin_password:
+        raise HTTPException(status_code=403, detail="Invalid password")
+    
+    await game_server.reset_game()
+    return {"status": "Game reset"}
 
 @app.post("/start")
 async def start_game(pwd: str, num_timesteps:int):
@@ -189,6 +233,7 @@ async def start_game(pwd: str, num_timesteps:int):
     logger.info("Game started : for {} timesteps".format(num_timesteps))
 
     return {"status": "Game starting"}
+
 
 
 @app.websocket("/ws/{game_id}/{player_id}")
@@ -245,35 +290,126 @@ async def handle_player_interaction(websocket: WebSocket, game_id: str, player_i
         print("<game done>")
         
 
-        
-        
     except Exception as e:
         logger.error(f"Error with player {player_id}: {e}")
         await game_server.disconnect(player_id)
 
     await game_server.disconnect(player_id)
+
+
+
+#----------------- ADMIN PAGE --------------------
+
+@app.get("/admin")
+async def admin_get(request: Request):
+    authenticated = request.session.get('authenticated', False)
+    return templates.TemplateResponse("admin.jinja", {"request": request, "authenticated": authenticated})
+
+@app.post("/admin")
+async def admin_post(request: Request, password: str = Form(...)):
+    if password == game_server.admin_password:
+        request.session['authenticated'] = True
+
+        # add info for authenticated users
+        n_players = len(game_server._players)
+        game_id = game_server.game_id
+        is_game_over = game_server.game.is_game_over()
+
+        variables = {"n_players": n_players, "is_game_over": is_game_over, "game_id": game_id}
+        variables["request"] = request
+        variables["authenticated"] = True
+
+        return templates.TemplateResponse("admin.jinja", variables)
+    else:
+        return templates.TemplateResponse("admin.jinja", {"request": request, "authenticated": False, "error": "Invalid password"})
     
 
-    # try:
-    #     while True:
-    #         # Wait for action from the player
-    #         action = await websocket.receive_text()
-            
-    #         # Process the action
-    #         await game_server.receive_action(player_id, action)
-            
-    # except WebSocketDisconnect:
-    #     # Handle graceful disconnection - player may reconnect later
-    #     logger.info(f"WebSocket connection for player {player_id} closed")
-    #     await game_server.disconnect(player_id)
-    # except Exception as e:
-    #     logger.error(f"Error with player {player_id}: {e}")
-    #     await game_server.disconnect(player_id)
-
-
-
-
-
-
+@app.post("/admin/start")
+async def admin_start(request: Request, num_timesteps: int = Form(20)):
+    if not request.session.get('authenticated', False):
+        return RedirectResponse(url="/admin", status_code=303)
     
-            
+    try:
+        # Call the start game function with admin password and timesteps
+        await start_game(game_server.admin_password, num_timesteps)
+        message = f"Game started successfully for {num_timesteps} timesteps!"
+        
+        # Add info for authenticated users
+        n_players = len(game_server._players)
+        game_id = game_server.game_id
+        is_game_over = game_server.game.is_game_over()
+        
+        variables = {
+            "request": request, 
+            "authenticated": True, 
+            "message": message,
+            "n_players": n_players, 
+            "n_timesteps": num_timesteps, 
+            "is_game_over": is_game_over, 
+            "game_id": game_id
+        }
+        
+        return templates.TemplateResponse("admin.jinja", variables)
+    except Exception as e:
+        return templates.TemplateResponse("admin.jinja", {"request": request, "authenticated": True, "error": str(e)})
+    
+
+@app.get("/admin/game-info")
+async def admin_game_info(request: Request):
+    if not request.session.get('authenticated', False):
+        return {"error": "Not authenticated"}
+    
+    n_players = len(game_server._players)
+    game_id = game_server.game_id
+    is_game_over = game_server.game.is_game_over()
+    n_timesteps = game_server.game.n_timesteps
+    current_timestep = game_server.game.timestep
+    is_active = game_server.is_active
+    
+    return {
+        "n_players": n_players,
+        "game_id": game_id,
+        "is_game_over": is_game_over,
+        "n_timesteps": n_timesteps,
+        "current_timestep": current_timestep,
+        "is_active": is_active
+    }
+
+
+@app.post("/admin/reset")
+async def admin_reset(request: Request):
+    if not request.session.get('authenticated', False):
+        return RedirectResponse(url="/admin", status_code=303)
+    
+    try:
+        # Reset the game server
+        await game_server.reset_game()
+        message = "Game server reset successfully!"
+        
+        # Add info for authenticated users
+        n_players = len(game_server._players)
+        game_id = game_server.game_id
+        is_game_over = game_server.game.is_game_over()
+        n_timesteps = game_server.game.n_timesteps
+        current_timestep = game_server.game.timestep
+        is_active = game_server.is_active
+        
+        variables = {
+            "request": request, 
+            "authenticated": True, 
+            "message": message,
+            "n_players": n_players,
+            "game_id": game_id,
+            "is_game_over": is_game_over,
+            "n_timesteps": n_timesteps,
+            "current_timestep": current_timestep,
+            "is_active": is_active
+        }
+        
+        return templates.TemplateResponse("admin.jinja", variables)
+    except Exception as e:
+        return templates.TemplateResponse("admin.jinja", {
+            "request": request, 
+            "authenticated": True, 
+            "error": f"Error resetting game server: {str(e)}"
+        })

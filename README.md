@@ -19,5 +19,8 @@ The product should contain a apropriate number of bugs.
 # To Run:
 1. Start server ( uvicorn hydro_trader.server:app --host 0.0.0.0 --port 8000 )
 2. Start client ( python ./hydro_trader/client.py )
-3. start_game.py (password is 1234, python ./start_game.py -p 1234 )
+3. start_game.py (password is 1234, python ./start_game.py -p 1234 )  
+
+# Admin panel
+You can access the admin panel at localhost:8000/admin   (default password is 1234 )
 
