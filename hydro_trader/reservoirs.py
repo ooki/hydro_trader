@@ -123,7 +123,7 @@ class MontainWithSnow:
             self.current_snow_height = self.data[0]['snow_height']
             self.temperature = self.data[0]['temperature']
 
-    def process_timestep(self):
+def process_timestep(self):
         """
         Process the mountain snow melt for the next timestep.
         Calculate snow melt based on temperature and send water to output reservoir.
