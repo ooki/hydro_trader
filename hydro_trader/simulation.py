@@ -166,9 +166,9 @@ class Simulation:
         tesselvannet.water_area = 5_000_000.0  # 5 km²
         tesselvannet.basin_area = 15_000_000.0  # 15 km²
         tesselvannet.capacity = 60_000_000.0  # 60 million m³
-        tesselvannet.water_amount = tesselvannet.capacity * 0.5  # Initial water: 50% full (reduced to allow buffer for overflow)
+        tesselvannet.water_amount = tesselvannet.capacity * 0.5  # Initial water: 50% full (buffer for overflow)
         tesselvannet.generator_head_height = 45.0  # 45m head height
-        tesselvannet.max_generator_flow = 110.0  # m³/s
+        tesselvannet.max_generator_flow = 110.0  # m³/s (= 9,504,000 m³/day)
 
         # Østarne (Small)
         ostarne = Reservoir(
@@ -178,9 +178,9 @@ class Simulation:
         ostarne.water_area = 2_000_000.0  # 2 km²
         ostarne.basin_area = 10_000_000.0  # 10 km²
         ostarne.capacity = 18_000_000.0  # 18 million m³
-        ostarne.water_amount = ostarne.capacity * 0.8  # Initial water: 80% full (increased for immediate opportunity)
+        ostarne.water_amount = ostarne.capacity * 0.8  # Initial water: 80% full (immediate opportunity)
         ostarne.generator_head_height = 35.0  # 35m head height
-        ostarne.max_generator_flow = 45.0  # m³/s    
+        ostarne.max_generator_flow = 45.0  # m³/s (= 3,888,000 m³/day)    
         
         # Vestarne (Largest)
         vestarne = Reservoir(
@@ -190,9 +190,9 @@ class Simulation:
         vestarne.water_area = 8_000_000.0  # 8 km²
         vestarne.basin_area = 28_000_000.0  # 28 km²
         vestarne.capacity = 120_000_000.0  # 120 million m³
-        vestarne.water_amount = vestarne.capacity * 0.6  # Initial water: 60% full (reduced to need time to fill)
+        vestarne.water_amount = vestarne.capacity * 0.6  # Initial water: 60% full (needs time to fill)
         vestarne.generator_head_height = 65.0  # 65m head height
-        vestarne.max_generator_flow = 180.0  # m³/s
+        vestarne.max_generator_flow = 180.0  # m³/s (= 15,552,000 m³/day)
         
         # Nyfjord (Small reservoir, large basin)
         nyfjord = Reservoir(
@@ -202,35 +202,35 @@ class Simulation:
         nyfjord.water_area = 3_000_000.0  # 3 km²
         nyfjord.basin_area = 35_000_000.0  # 35 km² (large catchment area)
         nyfjord.capacity = 25_000_000.0  # 25 million m³
-        nyfjord.water_amount = nyfjord.capacity * 0.7  # Initial water: 70% full (adjusted for balanced start)
+        nyfjord.water_amount = nyfjord.capacity * 0.7  # Initial water: 70% full (balanced start)
         nyfjord.generator_head_height = 30.0  # 30m head height
-        nyfjord.max_generator_flow = 60.0  # m³/s
+        nyfjord.max_generator_flow = 60.0  # m³/s (= 5,184,000 m³/day)
         
         # Create rivers
         # Nyfjord -> Vestarne (medium river, 2 days travel time)
         nyfjord_vestarne_river = River(
             id="Nyfjord-Vestarne",
-            initial_water=80_000.0,
+            initial_water=4_000_000.0,  # More realistic initial water
             length_in_timesteps=2,
-            max_flow=90.0,
+            max_flow=5_000_000.0, 
             output_reservoir=vestarne
         )
         
         # Both Arne -> Tesselvannet (long river, 3 day travel time)
         arne_tesselvannet_river = River(
             id="Arne-Tesselvannet",
-            initial_water=210_000.0,
+            initial_water=4_200_000.0,  # More realistic initial water
             length_in_timesteps=3,
-            max_flow=4_000_000.0,  # Increased to allow one generator to run but not both at full capacity
+            max_flow=11_000_000.0,
             output_reservoir=tesselvannet
         )
         
         # Tesselvannet -> Ocean (outlet river, no output reservoir)
         tesselvannet_ocean_river = River(
             id="Tesselvannet-Ocean",
-            initial_water=120_000.0,
+            initial_water=8_000_000.0,  # More realistic initial water
             length_in_timesteps=2,
-            max_flow=260.0,
+            max_flow=13_500_000.0,  # Can handle most incoming water but will overflow with persistent max production
             output_reservoir=None  # No reservoir at the end (ocean)
         )
         
