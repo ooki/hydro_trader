@@ -24,7 +24,7 @@ class River:
         self.length_in_timesteps = length_in_timesteps
         self.max_flow = max_flow
         self.output_reservoir = output_reservoir
-        self.current_flow = 0.0  # m3/s
+        self.current_flow = 0.0  # m3 
         self.consecutive_days_over_max = 0  # count of consecutive days over max flow
         self.cumulative_penalty = 0.0  # track the total cumulative penalty
 
@@ -72,11 +72,11 @@ class River:
             self.cumulative_penalty = 0.0
             return 0.0
         
-        # Calculate the excess flow
-        excess_flow = self.current_flow - self.max_flow
+        # Calculate the excess flow proportion
+        excess_flow = max(1 - (self.current_flow  / self.max_flow), 0)
+        excess_flow = min(excess_flow, 1)
         
-        # Base penalty for today: 100 cash units per m³/s of excess flow
-        today_penalty = 100.0 * excess_flow
+        today_penalty = 1 + excess_flow
         
         # Add today's penalty to the cumulative total
         total_penalty = today_penalty + self.cumulative_penalty

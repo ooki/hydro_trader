@@ -163,74 +163,74 @@ class Simulation:
             id="Tesselvannet",
             rain_data_csv=rain_data_path["tesselvannet"]
         )
-        tesselvannet.water_area = 5000000.0  # 5 km²
-        tesselvannet.basin_area = 15000000.0  # 15 km²
-        tesselvannet.capacity = 50000000.0  # 50 million m³
-        tesselvannet.water_amount = 30000000.0  # Initial water: 60% full
-        tesselvannet.generator_head_height = 40.0  # 40m head height
-        tesselvannet.max_generator_flow = 100.0  # m³/s
+        tesselvannet.water_area = 5_000_000.0  # 5 km²
+        tesselvannet.basin_area = 15_000_000.0  # 15 km²
+        tesselvannet.capacity = 60_000_000.0  # 60 million m³
+        tesselvannet.water_amount = tesselvannet.capacity * 0.5  # Initial water: 50% full (reduced to allow buffer for overflow)
+        tesselvannet.generator_head_height = 45.0  # 45m head height
+        tesselvannet.max_generator_flow = 110.0  # m³/s
 
         # Østarne (Small)
         ostarne = Reservoir(
             id="Østarne",
             rain_data_csv=rain_data_path["ostarne"]
         )
-        ostarne.water_area = 2000000.0  # 2 km²
-        ostarne.basin_area = 8000000.0  # 8 km²
-        ostarne.capacity = 15000000.0  # 15 million m³
-        ostarne.water_amount = 9000000.0  # Initial water: 60% full
-        ostarne.generator_head_height = 30.0  # 30m head height
-        ostarne.max_generator_flow = 50.0  # m³/s    
+        ostarne.water_area = 2_000_000.0  # 2 km²
+        ostarne.basin_area = 10_000_000.0  # 10 km²
+        ostarne.capacity = 18_000_000.0  # 18 million m³
+        ostarne.water_amount = ostarne.capacity * 0.8  # Initial water: 80% full (increased for immediate opportunity)
+        ostarne.generator_head_height = 35.0  # 35m head height
+        ostarne.max_generator_flow = 45.0  # m³/s    
         
         # Vestarne (Largest)
         vestarne = Reservoir(
             id="Vestarne",
             rain_data_csv=rain_data_path["vestarne"]
         )
-        vestarne.water_area = 8000000.0  # 8 km²
-        vestarne.basin_area = 25000000.0  # 25 km²
-        vestarne.capacity = 100000000.0  # 100 million m³
-        vestarne.water_amount = 70000000.0  # Initial water: 70% full
-        vestarne.generator_head_height = 60.0  # 60m head height
-        vestarne.max_generator_flow = 150.0  # m³/s
+        vestarne.water_area = 8_000_000.0  # 8 km²
+        vestarne.basin_area = 28_000_000.0  # 28 km²
+        vestarne.capacity = 120_000_000.0  # 120 million m³
+        vestarne.water_amount = vestarne.capacity * 0.6  # Initial water: 60% full (reduced to need time to fill)
+        vestarne.generator_head_height = 65.0  # 65m head height
+        vestarne.max_generator_flow = 180.0  # m³/s
         
         # Nyfjord (Small reservoir, large basin)
         nyfjord = Reservoir(
             id="Nyfjord",
             rain_data_csv=rain_data_path["nyfjord"]
         )
-        nyfjord.water_area = 3000000.0  # 3 km²
-        nyfjord.basin_area = 40000000.0  # 40 km² (large catchment area)
-        nyfjord.capacity = 20000000.0  # 20 million m³
-        nyfjord.water_amount = 16000000.0  # Initial water: 80% full
-        nyfjord.generator_head_height = 25.0  # 25m head height
-        nyfjord.max_generator_flow = 75.0  # m³/s
+        nyfjord.water_area = 3_000_000.0  # 3 km²
+        nyfjord.basin_area = 35_000_000.0  # 35 km² (large catchment area)
+        nyfjord.capacity = 25_000_000.0  # 25 million m³
+        nyfjord.water_amount = nyfjord.capacity * 0.7  # Initial water: 70% full (adjusted for balanced start)
+        nyfjord.generator_head_height = 30.0  # 30m head height
+        nyfjord.max_generator_flow = 60.0  # m³/s
         
         # Create rivers
         # Nyfjord -> Vestarne (medium river, 2 days travel time)
         nyfjord_vestarne_river = River(
             id="Nyfjord-Vestarne",
-            initial_water=5000.0,
+            initial_water=80_000.0,
             length_in_timesteps=2,
-            max_flow=50.0 * 2,
+            max_flow=90.0,
             output_reservoir=vestarne
         )
         
         # Both Arne -> Tesselvannet (long river, 3 day travel time)
         arne_tesselvannet_river = River(
             id="Arne-Tesselvannet",
-            initial_water=8000.0,
+            initial_water=210_000.0,
             length_in_timesteps=3,
-            max_flow=80.0 * 3,
+            max_flow=4_000_000.0,  # Increased to allow one generator to run but not both at full capacity
             output_reservoir=tesselvannet
         )
         
         # Tesselvannet -> Ocean (outlet river, no output reservoir)
         tesselvannet_ocean_river = River(
             id="Tesselvannet-Ocean",
-            initial_water=10000.0,
+            initial_water=120_000.0,
             length_in_timesteps=2,
-            max_flow=100.0 * 2,
+            max_flow=260.0,
             output_reservoir=None  # No reservoir at the end (ocean)
         )
         

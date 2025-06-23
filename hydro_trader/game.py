@@ -136,7 +136,8 @@ class Game:
         self.price_of_power = {} # player_id -> price_of_power
 
         self.current_day_production_demand = 0 # to be read from marked file 
-        self.penalty_convertion_rate = 0.0 # convertion rate from penalty to cash for river overflows
+        self.penalty_convertion_rate = 1_000_000.0 # convertion rate from penalty to cash for river overflows
+        self.current_overflow_penalty = 0
 
         self.timestep = 0
 
@@ -167,6 +168,7 @@ class Game:
         d["cash"] = self.cash[player_id]
         d["marked_demand"] = self.current_day_production_demand
         d["sold_power"] = self.power_marked.accepted_bids
+        d["overflow_penalty"] = self.current_overflow_penalty
 
         earning_report = self.power_marked.earnings_report_by_player.get(player_id)
         if earning_report is None:
@@ -199,12 +201,13 @@ class Game:
 
             print("player_output_in_mwh:", player_output_in_mwh)
 
+            self.current_overflow_penalty = 0.0
             if penalty_for_river_overflow > 0:
                 print("negative river overflow penalty: {}".format(penalty_for_river_overflow))
-                self.cash[player_id] -= penalty_for_river_overflow * self.penalty_convertion_rate
+                self.current_overflow_penalty = max(0, penalty_for_river_overflow * self.penalty_convertion_rate)
+                self.cash[player_id] -= self.current_overflow_penalty
 
             if player_output_in_mwh > 0:
-                price_of_power = self.price_of_power.get(player_id, 0.0)                
                 self.power_marked.add_player_bid(player_id, player_output_in_mwh, self.price_of_power[player_id])
 
         self.power_marked.process_bids()
