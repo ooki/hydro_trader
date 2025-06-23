@@ -1,0 +1,122 @@
+<!-- templates/scoreboard.jinja -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hydro Trader Scoreboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .scoreboard {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        .rank {
+            font-weight: bold;
+            text-align: center;
+        }
+        .gold {
+            background-color: #ffd700;
+        }
+        .silver {
+            background-color: #c0c0c0;
+        }
+        .bronze {
+            background-color: #cd7f32;
+        }
+        .market-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .refresh-button:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hydro Trader Scoreboard</h1>
+    
+    <div class="market-info">
+        <h3>Market Information</h3>
+        <p>{{ timestep }} </p>
+        <p>Average Power Price: {{ "%.4f"|format(average_power_price) }} NOK/kWh</p>
+    </div>
+
+    <div class="scoreboard">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Cash (NOK)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player_name, cash in scores.items() %}
+                    <tr class="{% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                        <td class="rank">{{ loop.index }}</td>
+                        <td>{{ player_name }}</td>
+                        <td>{{ "%.2f"|format(cash) }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center;">No players yet</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        
+    
+    <button class="refresh-button" onclick="location.reload()">Refresh Scoreboard</button>
+    
+    <script>
+        setTimeout(function() {
+            location.reload();
+        }, 1000);
+    </script>
+</body>
+</html>

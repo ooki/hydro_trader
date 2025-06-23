@@ -22,7 +22,7 @@ class PowerMarked:
 
         self.marked_demand_data = []
 
-        self.demand_factor = 900.0 # multiplier per player in MWh
+        self.demand_factor = 1150.0 # multiplier per player in MWh
         self.n_players = 0
         self.timestep = 0
         self.current_bids_by_player = {}
@@ -139,6 +139,8 @@ class Game:
         self.penalty_convertion_rate = 1_000_000.0 # convertion rate from penalty to cash for river overflows
         self.current_overflow_penalty = 0
 
+        self.average_power_price = 0.0
+
         self.timestep = 0
 
     def add_player(self, player_id, player_name):
@@ -169,6 +171,7 @@ class Game:
         d["marked_demand"] = self.current_day_production_demand
         d["sold_power"] = self.power_marked.accepted_bids
         d["overflow_penalty"] = self.current_overflow_penalty
+        d["average_power_price"] = self.average_power_price
 
         earning_report = self.power_marked.earnings_report_by_player.get(player_id)
         if earning_report is None:
@@ -187,9 +190,10 @@ class Game:
         return d
 
     def is_game_over(self):
-        return self.timestep >= self.n_timesteps
+        return self.timestep >= self.n_timesteps - 1
     
     def process_timestep(self):
+
 
         for player_id, sim in self.simulations.items():
 
@@ -210,7 +214,8 @@ class Game:
             if player_output_in_mwh > 0:
                 self.power_marked.add_player_bid(player_id, player_output_in_mwh, self.price_of_power[player_id])
 
-        self.power_marked.process_bids()
+        self.average_power_price = self.power_marked.process_bids()
+        
 
         for player_id, (price, amount_water) in self.power_marked.earnings_report_by_player.items():
             self.cash[player_id] += price

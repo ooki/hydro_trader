@@ -166,7 +166,7 @@ if __name__ == "__main__":
     no_produce_strategy = Strategy()
 
     uri = "ws://localhost:8000/ws"    
-    player_name = "player1"
+    player_name = "player_{}".format(uuid.uuid4())
     game_id = "game1"
 
     client = Client(no_produce_strategy, uri, player_name, game_id)

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from copy import deepcopy
 import os
 import uuid
+import datetime
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -413,3 +414,30 @@ async def admin_reset(request: Request):
             "authenticated": True, 
             "error": f"Error resetting game server: {str(e)}"
         })
+    
+@app.get("/scoreboard")
+async def scoreboard_get(request: Request):
+
+    scores = {}
+    for player_id in game_server._players:
+        name = game_server.game.names[player_id]
+        scores[name] = game_server.game.cash[player_id] / 1_000_000
+
+    # sort scores
+    sorted_scores = dict(sorted(scores.items(), key=lambda item: item[1], reverse=True))
+    power_price = game_server.game.average_power_price / 1000.0
+    timestep = game_server.game.timestep
+
+    # convert timestep to date:
+    # timestep 0, is Jan1, year 2010    
+    timestep_date = datetime.datetime(2010, 1, 1) + datetime.timedelta(days=timestep)
+
+    # write the day out as weekday - month day - month name
+    timestep = "Timestep:{}, date: {}".format(timestep, timestep_date.strftime("%A, %B %d"))
+
+    return templates.TemplateResponse("scoreboard.jinja", {
+                                                            "request": request,
+                                                            "scores": sorted_scores,
+                                                            "average_power_price": power_price,
+                                                            "timestep": timestep
+                                                           })
