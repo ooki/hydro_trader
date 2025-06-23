@@ -18,7 +18,7 @@ class PowerMarked:
     def __init__(self, data_dir):
         self.data_dir = data_dir
 
-        self.max_price_per_kwh = 10.0
+        
 
         self.marked_demand_data = []
 
@@ -30,6 +30,12 @@ class PowerMarked:
         self.earnings_report_by_player = {}
 
         self.accepted_bids = []
+
+        self.swedish_power_player_name = "The Royal Swedish Power Corp"
+        self.swedish_power_player_id = " +46 31 40 01 00"        
+        self.swedish_power_price = 5.0
+        self.swedish_power_amount = -100
+
 
         self._read_marked_file()
 
@@ -53,10 +59,9 @@ class PowerMarked:
         return 0.0
 
     def add_player_bid(self, player_id, power_amount_mwh, power_price_kWh):
-
-        price = min(power_price_kWh, self.max_price_per_kwh)
-        price = max(0.000001, price)
+        price = max(0.000001, power_price_kWh)
         self.current_bids_by_player[player_id] = (price, power_amount_mwh)
+
 
     def process_bids(self):
         """
@@ -66,14 +71,14 @@ class PowerMarked:
 
         # Sort bids by price in ascending order : add a epsilon to break ties
         epsilon = 0.00001
-        bids_to_sort = []
+        bids_to_sort = [ (self.swedish_power_price, self.swedish_power_player_id, self.swedish_power_price, self.swedish_power_amount) ]
+
         for player_id, (bid, amount) in self.current_bids_by_player.items():
             bids_to_sort.append((bid+(random.random() * epsilon), player_id, bid, amount))
 
 
         # zero afterwards
         self.current_bids_by_player = {}
-
         sorted_bids = sorted(bids_to_sort, key=lambda x: x[0])
         
         # Calculate total production and price
@@ -81,19 +86,22 @@ class PowerMarked:
         total_price = 0.0
         todays_marked_demand = self.get_production_demand()
 
-        # zero earnings
-        
+        # zero earnings        
         self.earnings_report_by_player = {}
         
         # Process bids
         for _, player_id, price, amount in sorted_bids:
 
+            if amount < -90:
+                # this is the swedish power price, buy the rest of stuff
+                amount = todays_marked_demand - total_production
+                
+
             # if we still have some demand left produce as much as possible
             # we dont need the entire bid, produce and pay for the part we used
             if total_production + amount > todays_marked_demand:
                 amount = todays_marked_demand - total_production
-                                    
-
+                                                
             # Add to total production and price
             total_production += amount
             player_earnings = amount * price * 1000.0 # kWh to MWh

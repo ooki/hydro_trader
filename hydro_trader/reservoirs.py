@@ -105,6 +105,14 @@ class MontainWithSnow:
         self.snow_area = 1000000.0  # m2 (default 1 km²)
         self.timestep = 0
         self.data = []
+
+        self.max_loss_water_factor = 0.05
+        self.water_loss_in_transporation = []
+
+        random.seed(42)
+        for _ in range(1000):
+            self.water_loss_in_transporation.append(random.uniform(0,self.max_loss_water_factor))
+
         
         # Read the CSV file
         if os.path.exists(in_file_csv):
@@ -141,7 +149,8 @@ class MontainWithSnow:
                 snow_melt = 0.0
                 if self.temperature > 0 and prev_snow_height > self.current_snow_height:
                     # Calculate snow melt in m³
-                    snow_melt = (prev_snow_height - self.current_snow_height) * self.snow_area
+                    f = self.water_loss_in_transporation[self.timestep % 1000] 
+                    snow_melt = (prev_snow_height - self.current_snow_height) * self.snow_area * f
                     # Add melt water to the reservoir - add direcly to the reservoir to make the task a bit easier (no delay)
                     self.output_reservoir.add_inflow_snow_melt(snow_melt)
                 
