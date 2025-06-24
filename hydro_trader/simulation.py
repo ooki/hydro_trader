@@ -212,7 +212,7 @@ class Simulation:
             id="Nyfjord-Vestarne",
             initial_water=2_000_000.0,  # More realistic initial water
             length_in_timesteps=20,
-            max_flow=15_000_000.0, 
+            max_flow=16_000_000.0, 
             output_reservoir=vestarne
         )
         
@@ -221,7 +221,7 @@ class Simulation:
             id="Arne-Tesselvannet",
             initial_water=2_200_000.0,  # More realistic initial water
             length_in_timesteps=6,
-            max_flow=6_500_000.0,
+            max_flow=7_500_000.0,
             output_reservoir=tesselvannet
         )
         
@@ -230,7 +230,7 @@ class Simulation:
             id="Tesselvannet-Ocean",
             initial_water=4_000_000.0,  # More realistic initial water
             length_in_timesteps=4,
-            max_flow=7_000_000.0,  # Can handle most incoming water but will overflow with persistent max production
+            max_flow=10_000_000.0,  # Can handle most incoming water but will overflow with persistent max production
             output_reservoir=None  # No reservoir at the end (ocean)
         )
         
