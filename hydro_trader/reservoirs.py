@@ -311,7 +311,7 @@ class Reservoir:
             self.current_production = 0.0
             self.generator_flow = 0.0
             return 0.0
-                
+                        
         # Get current water height
         water_height = self.get_water_height()
         

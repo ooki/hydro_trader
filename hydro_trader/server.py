@@ -7,6 +7,7 @@ import os
 import uuid
 import datetime
 import json 
+import pickle
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -63,8 +64,8 @@ def log_scoreboard_to_json(game: Game):
     with open("./scoreboards/scoreboard_{}.json".format(game.timestep), "w") as fp:
         json.dump(out, fp, indent=4)
 
-    
-
+    with open("./scoreboards/gamestate_{}.pkl".format(game.timestep), "wb") as fp:
+        pickle.dump(game, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 

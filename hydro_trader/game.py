@@ -194,8 +194,10 @@ class Game:
     
     def process_timestep(self):
 
-
         for player_id, sim in self.simulations.items():
+
+            for reservoir in sim.reservoirs:
+                reservoir.is_producing = False
 
             producing_reservoirs = self.production.get(player_id, [])
             for r_id in producing_reservoirs:
