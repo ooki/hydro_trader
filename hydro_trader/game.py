@@ -23,6 +23,7 @@ class PowerMarked:
         self.marked_demand_data = []
 
         self.demand_factor = 1150.0 # multiplier per player in MWh
+        self.player_scale_factor = 0.93
         self.n_players = 0
         self.timestep = 0
         self.current_bids_by_player = {}
@@ -54,7 +55,7 @@ class PowerMarked:
 
     def get_production_demand(self):
         if self.timestep < len(self.marked_demand_data):
-            return self.marked_demand_data[self.timestep] * self.n_players * self.demand_factor
+            return self.marked_demand_data[self.timestep] * (self.n_players * self.player_scale_factor) * self.demand_factor
         
         return 0.0
 

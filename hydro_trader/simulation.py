@@ -305,8 +305,8 @@ class Simulation:
 
         river_overflow_penalty = 0
         for river in self.rivers:
-            flow = river.process_timestep()
-            river_overflow_penalty += river.get_max_flow_penalty()            
+            flow, rop = river.process_timestep()
+            river_overflow_penalty += rop
 
             if verbose:
                 print(f"  {river.id}: {flow:.2f} m³/s flow")

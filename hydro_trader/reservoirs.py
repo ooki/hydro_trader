@@ -39,6 +39,9 @@ class River:
 
         self.current_flow = sum(self.water_queue)
 
+        # get overflow water
+        overflow_penalty =  self.get_max_flow_penalty()
+
         # Get water at the end of the queue
         outflow_water = self.water_queue.pop()        
         
@@ -57,7 +60,7 @@ class River:
         # Add new empty slot at the beginning of queue
         self.water_queue.insert(0, 0.0)
         
-        return self.current_flow
+        return self.current_flow, overflow_penalty
         
     def get_max_flow_penalty(self):
         """
