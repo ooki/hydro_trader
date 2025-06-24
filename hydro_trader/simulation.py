@@ -211,8 +211,8 @@ class Simulation:
         nyfjord_vestarne_river = River(
             id="Nyfjord-Vestarne",
             initial_water=2_000_000.0,  # More realistic initial water
-            length_in_timesteps=16,
-            max_flow=8_000_000.0, 
+            length_in_timesteps=20,
+            max_flow=15_000_000.0, 
             output_reservoir=vestarne
         )
         
