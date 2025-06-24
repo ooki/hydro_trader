@@ -211,8 +211,8 @@ class Simulation:
         nyfjord_vestarne_river = River(
             id="Nyfjord-Vestarne",
             initial_water=2_000_000.0,  # More realistic initial water
-            length_in_timesteps=8,
-            max_flow=6_000_000.0, 
+            length_in_timesteps=16,
+            max_flow=8_000_000.0, 
             output_reservoir=vestarne
         )
         
@@ -247,7 +247,7 @@ class Simulation:
             output_reservoir=nyfjord,
             in_file_csv=snow_data_paths["kolasnuten"]
         )
-        kolasnuten.snow_area = 2500000.0  # 2.5 km²
+        kolasnuten.snow_area = 3500000.0  # 3.5 km²
         
         # 2. Bastihøyden mountains -> Both Østarne and Vestarne
         bastihoyden_ost = MontainWithSnow(
