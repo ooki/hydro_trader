@@ -334,6 +334,8 @@ class Reservoir:
 
         actual_flow_rate = flow_factor * self.max_generator_flow        
         water_needed_for_day = actual_flow_rate * seconds_in_day
+        if water_needed_for_day > self.water_amount: # fix so that we don't use more water than we have
+            water_needed_for_day = self.water_amount
 
         # Use all available water for production
         if water_height > 0:
