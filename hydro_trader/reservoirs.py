@@ -311,6 +311,13 @@ class Reservoir:
             self.current_production = 0.0
             self.generator_flow = 0.0
             return 0.0
+        
+        water_procentage = self.water_amount / self.capacity
+        if water_procentage <= 0.1:
+            self.current_production = 0.0
+            self.generator_flow = 0.0
+            self.is_producing = False
+            return 0.0
                         
         # Get current water height
         water_height = self.get_water_height()
@@ -333,7 +340,6 @@ class Reservoir:
         max_water_height = self.capacity / self.water_area        
         flow_factor = self.get_water_height() / max_water_height
         flow_factor = min(flow_factor, 1.0)
-        flow_factor = max(flow_factor, 0.4)
 
         actual_flow_rate = flow_factor * self.max_generator_flow        
         water_needed_for_day = actual_flow_rate * seconds_in_day
@@ -413,7 +419,20 @@ class Reservoir:
                     river.add_inflow(overflow_per_river)
                     
         # Calculate electricity production
+        water0 = self.water_amount
         self.calculate_production()
+        water1 = self.water_amount
+        if self.out_rivers:
+            water_out = water0 - water1
+            if water_out > 0:
+                
+                water_out_per_river = water_out / len(self.out_rivers)
+                # Send to each river
+                for river in self.out_rivers:
+                    river.add_inflow(water_out_per_river)
+
+
+
 
 
 

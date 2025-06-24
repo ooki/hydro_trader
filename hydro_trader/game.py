@@ -22,7 +22,7 @@ class PowerMarked:
 
         self.marked_demand_data = []
 
-        self.demand_factor = 1200.0 # multiplier per player in MWh
+        self.demand_factor = 600.0 # multiplier per player in MWh
         self.player_scale_factor = 0.8
         self.n_players = 0
         self.timestep = 0
