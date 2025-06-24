@@ -6,6 +6,7 @@ from copy import deepcopy
 import os
 import uuid
 import datetime
+import json 
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +27,45 @@ from hydro_trader.simulation import Simulation
 
 logger = logging.getLogger("hydro_trader.server")
 logging.basicConfig(level=logging.INFO)
+
+
+def log_scoreboard_to_json(game: Game):
+    scores = {}
+    for player_id, cash in game.cash.items():
+        try:
+            name = game.names[player_id]
+            scores[name] = cash / 1_000_000
+        except KeyError:
+            continue
+
+    # sort scores
+    sorted_scores = dict(sorted(scores.items(), key=lambda item: item[1], reverse=True))
+    power_price = game.average_power_price / 1000.0
+    timestep = game.timestep
+
+    # convert timestep to date:
+    # timestep 0, is Jan1, year 2010    
+    timestep_date = datetime.datetime(2010, 1, 1) + datetime.timedelta(days=timestep)
+
+    # write the day out as weekday - month day - month name
+    timestep = "Timestep:{}, date: {}".format(timestep, timestep_date.strftime("%A, %B %d"))
+
+    out = {
+        "scores": sorted_scores,
+        "average_power_price": power_price,
+        "timestep": timestep,
+    }
+    
+    # write out to file
+    if not os.path.exists("./scoreboards"):
+        os.makedirs("./scoreboards")
+
+    with open("./scoreboards/scoreboard_{}.json".format(game.timestep), "w") as fp:
+        json.dump(out, fp, indent=4)
+
+    
+
+
 
 
 class Server:
@@ -56,10 +96,15 @@ class Server:
     
     @asynccontextmanager
     async def game_loop_task(self, app: FastAPI):
-                
+        
+        
+
         self._task = asyncio.create_task(self._run_game_loop())
         logger.info("Game server started")
         
+
+
+
         try:
             yield  # serve
         finally:
@@ -285,7 +330,10 @@ async def handle_player_interaction(websocket: WebSocket, game_id: str, player_i
                 await game_server.send_timestep_state(player_id)            
 
             game_server.update_events[player_id].clear()
+            
 
+            # save gamestate
+            log_scoreboard_to_json(game_server.game)
             await asyncio.sleep(0.01)        
 
         print("<game done>")

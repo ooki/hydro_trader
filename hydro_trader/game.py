@@ -22,8 +22,8 @@ class PowerMarked:
 
         self.marked_demand_data = []
 
-        self.demand_factor = 1150.0 # multiplier per player in MWh
-        self.player_scale_factor = 0.93
+        self.demand_factor = 1200.0 # multiplier per player in MWh
+        self.player_scale_factor = 0.8
         self.n_players = 0
         self.timestep = 0
         self.current_bids_by_player = {}
@@ -36,7 +36,6 @@ class PowerMarked:
         self.swedish_power_player_id = " +46 31 40 01 00"        
         self.swedish_power_price = 5.0
         self.swedish_power_amount = -100
-
 
         self._read_marked_file()
 
